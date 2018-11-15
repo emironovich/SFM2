@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <complex>
 #include <vector>
+#include <utility>  
 
 using namespace std;
 using namespace Eigen;
@@ -21,7 +22,6 @@ vector<MatrixXd> FindFMatrix(double * x, double * y, double * xx, double * yy) {
 			Q(i, j) = M(i, j + 10);
 		}
 	}
-	hi();
 	VectorXd poly = find_coefficients(Q);
 
 
@@ -50,7 +50,7 @@ vector<MatrixXd> FindFMatrix(double * x, double * y, double * xx, double * yy) {
 	}
 
 	//find lambda 2 (lambdas apparently)
-	vector<double> L2_vector;
+	vector<pair<double, double> > L2_vector;
 	for (int i = 0; i < L1_vector.size(); i++) {
 		L2_vector.push_back(find_L2(L1_vector[i]));
 	}
@@ -59,30 +59,12 @@ vector<MatrixXd> FindFMatrix(double * x, double * y, double * xx, double * yy) {
 	vector<MatrixXd> F_vector;
 	for (int i = 0; i < L1_vector.size(); i++) {
 		double L1 = L1_vector[i];
-		double L2 = L2_vector[i];
-		Matrix3d F;
-		//find F[2][3] supposing that F[3][3] = 1
-		F(2, 3) = findF23(Q, L1, L2);
-		F(3, 3) = 1;
+		double L2 = L2_vector[i].first;
+		
+		//todo check how many roots since we are working with real numbers
 
-		//find all the other coefficents of the matrix F
-
-		VectorXd X(6);
-		X(0) = L2 * F(2, 3);
-		X(1) = F(2, 3);
-		X(2) = F(3, 3);
-		X(3) = L1 * F(3, 3);
-		X(4) = L2 * F(3, 3);
-		X(5) = L1 * L2 * F(3, 3);
-
-		F(1, 1) = (Q.row(0) * X)(0);
-		F(1, 2) = (Q.row(1) * X)(0);
-		F(2, 1) = (Q.row(2) * X)(0);
-		F(2, 2) = (Q.row(3) * X)(0);
-		F(3, 1) = (Q.row(5) * X)(0);
-		F(3, 2) = (Q.row(7) * X)(0);
-		F(1, 3) = (Q.row(9) * X)(0);
-
+		F_vector.push_back(findF(Q, L1_vector[i], L2_vector[i].first));
+		F_vector.push_back(findF(Q, L1_vector[i], L2_vector[i].second));
 
 	}
 	return F_vector;

@@ -2,11 +2,13 @@
 #include <Eigen/Dense>
 #include <iostream>
 #include <complex>
+#include <utility>  
 
 using namespace Eigen;
+using namespace std;
 
-void findCoefficientsForL2Poly(double * L2, MatrixXd & Q, double L_1) {}
-void findCoefficientsForF23(double ** F, MatrixXd & Q, double L_1, double L_2) {}
+void findCoefficientsForL2Poly(double * L2, MatrixXd Q, double L_1) {}
+void findCoefficientsForF23(double ** F, MatrixXd Q, double L_1, double L_2) {}
 double find_0_coefficient(MatrixXd Q) { return 0; }
 double find_1_coefficient(MatrixXd Q) { return 0; }
 double find_2_coefficient(MatrixXd Q) { return 0; }
@@ -18,7 +20,7 @@ double find_7_coefficient(MatrixXd Q) { return 0; }
 double find_8_coefficient(MatrixXd Q) { return 0; }
 double find_9_coefficient(MatrixXd Q) { return 0; }
 double find_10_coefficient(MatrixXd Q) { return 0; }
-double find_L2(double L1) { return 0; }
+pair<double, double> find_L2(double L1) { return make_pair(0, 0); }
 double find_L1(double values) { return 0; }
 
 void gaussElimination(MatrixXd & M) {
@@ -37,7 +39,7 @@ void gaussElimination(MatrixXd & M) {
 		}
 	}
 }
-double findF23(MatrixXd & Q, double L1, double L2) { return 0; }
+double findF23(MatrixXd Q, double L1, double L2) { return 0; }
 VectorXd find_coefficients(MatrixXd Q) {
 	VectorXd poly(11);
 	poly(0) = find_0_coefficient(Q);
@@ -78,6 +80,28 @@ void fillM(MatrixXd M, double * x, double * y, double * xx, double * yy) {
 	}
 }
 
-void hi() {
-	std::cout << "Hello Liza!\n";
+Matrix3d findF(MatrixXd Q, double L1, double L2) {
+	Matrix3d F;
+	//find F[2][3] supposing that F[3][3] = 1
+	F(2, 3) = findF23(Q, L1, L2);
+	F(3, 3) = 1;
+
+	//find all the other coefficents of the matrix F
+
+	VectorXd X(6);
+	X(0) = L2 * F(2, 3);
+	X(1) = F(2, 3);
+	X(2) = F(3, 3);
+	X(3) = L1 * F(3, 3);
+	X(4) = L2 * F(3, 3);
+	X(5) = L1 * L2 * F(3, 3);
+
+	F(1, 1) = (Q.row(0) * X)(0);
+	F(1, 2) = (Q.row(1) * X)(0);
+	F(2, 1) = (Q.row(2) * X)(0);
+	F(2, 2) = (Q.row(3) * X)(0);
+	F(3, 1) = (Q.row(5) * X)(0);
+	F(3, 2) = (Q.row(7) * X)(0);
+	F(1, 3) = (Q.row(9) * X)(0);
+	return F;
 }
